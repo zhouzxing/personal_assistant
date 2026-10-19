@@ -30,7 +30,7 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
 /* 角色卡 */
 .char-card{position:relative;display:flex;flex-direction:column;align-items:center;width:min(700px,92vw);height:min(640px,88vh);background:var(--surface2);border:1px solid var(--border);border-radius:28px;box-shadow:0 30px 100px rgba(0,0,0,.55);backdrop-filter:blur(18px);overflow:hidden;animation:cardIn .9s cubic-bezier(.16,1,.3,1);}
 @keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(.96);}to{opacity:1;transform:none;}}
-.avatar-wrap{position:relative;width:210px;height:210px;margin-top:10px;border-radius:50%;border:4px solid var(--border);background:radial-gradient(circle at 30% 35%,rgba(255,255,255,.12),transparent 60%),var(--bg);box-shadow:inset 0 0 40px rgba(0,0,0,.4);overflow:hidden;}
+.avatar-wrap{position:relative;width:260px;height:372px;margin-top:12px;border-radius:24px;border:4px solid var(--border);background:radial-gradient(ellipse at 50% 86%,rgba(99,102,241,.20),transparent 62%),radial-gradient(circle at 28% 22%,rgba(255,255,255,.10),transparent 58%),var(--bg);box-shadow:inset 0 -30px 60px rgba(0,0,0,.5),inset 0 0 40px rgba(0,0,0,.35);overflow:hidden;}
 #avatar{width:100%;height:100%;object-fit:cover;transition:transform .5s ease,filter .4s ease;filter:drop-shadow(0 6px 24px rgba(0,0,0,.55));}
 .avatar-wrap.talking #avatar{transform:scale(1.06);filter:drop-shadow(0 12px 32px rgba(99,102,241,.45));}
 .avatar-wrap.thinking #avatar{filter:blur(1px) drop-shadow(0 8px 20px rgba(168,85,247,.35));}
@@ -113,6 +113,70 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
 .sw::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;}
 .sw.checked{background:var(--accent);} .sw.checked::after{transform:translateX(24px);}
 .close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+
+/* ── 状态条与动效 ── */
+.state-bar{position:absolute;top:0;left:0;right:0;height:4px;z-index:10;background:rgba(255,255,255,.05);}
+.state-bar .fill{height:100%;width:30%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:all .5s cubic-bezier(.4,0,.2,1);}
+.state-bar.warn .fill{background:linear-gradient(90deg,var(--warn),var(--danger));}
+.state-bar.sleep .fill{background:linear-gradient(90deg,#374151,#4b5563);}
+.state-bar.ok .fill{background:linear-gradient(90deg,var(--ok),#4ade80);}
+
+.avatar-wrap.idle #avatar{animation:breath 4s ease-in-out infinite;}
+@keyframes breath{0%,100%{transform:scale(1) translateY(0);}50%{transform:scale(1.02) translateY(-4px);}}
+.avatar-wrap.sleeping #avatar{animation:sleepBreathe 5s ease-in-out infinite;filter:grayscale(.3) drop-shadow(0 6px 24px rgba(0,0,0,.7));}
+@keyframes sleepBreathe{0%,100%{transform:scale(.98) translateY(2px);}50%{transform:scale(1.01) translateY(-2px);}}
+.avatar-wrap.talking #avatar{transform:scale(1.06);filter:drop-shadow(0 12px 32px rgba(99,102,241,.5));animation:pulseGlow 1.2s ease-in-out infinite;}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.4);}50%{box-shadow:0 0 0 12px rgba(99,102,241,0);}}
+.avatar-wrap.thinking #avatar{filter:blur(1px) drop-shadow(0 8px 20px rgba(168,85,247,.35));animation:thinkSway 2s ease-in-out infinite;}
+@keyframes thinkSway{0%,100%{transform:rotate(0deg) scale(1);}25%{transform:rotate(2deg) scale(1.02);}75%{transform:rotate(-2deg) scale(1.02);}}
+.avatar-wrap.executing #avatar{filter:drop-shadow(0 12px 32px rgba(34,197,94,.45));animation:execPulse .8s ease-in-out infinite;}
+@keyframes execPulse{0%,100%{transform:scale(1.02);}50%{transform:scale(1.08);}}
+.avatar-wrap.alert #avatar{filter:drop-shadow(0 0 20px rgba(239,68,68,.6));animation:alertShake .5s ease-in-out infinite;}
+@keyframes alertShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+.ring{position:absolute;inset:-8px;border-radius:28px;pointer-events:none;opacity:0;transition:opacity .4s;}
+.avatar-wrap.talking .ring{border:2px solid rgba(99,102,241,.4);opacity:1;animation:ringPulse 1.5s ease-out infinite;}
+.avatar-wrap.thinking .ring{border:2px dashed rgba(168,85,247,.5);opacity:1;animation:spin 3s linear infinite;}
+.avatar-wrap.executing .ring{border:3px solid rgba(34,197,94,.5);opacity:1;animation:ringPulse .6s ease-out infinite;}
+.avatar-wrap.alert .ring{border:3px solid rgba(239,68,68,.6);opacity:1;animation:ringPulse .8s ease-out infinite;}
+@keyframes ringPulse{0%{transform:scale(.95);opacity:.8;}100%{transform:scale(1.15);opacity:0;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.zzz{position:absolute;top:-10px;right:20px;font-size:1.4rem;color:var(--dim);opacity:0;font-weight:700;}
+.avatar-wrap.sleeping .zzz{opacity:1;animation:zfloat 2s ease-in-out infinite;}
+@keyframes zfloat{0%{transform:translateY(0) scale(.8);opacity:0;}30%{opacity:.9;}100%{transform:translateY(-30px) scale(1.2);opacity:0;}}
+
+.think-bubble{position:absolute;top:-6px;right:-14px;width:34px;height:34px;border-radius:50%;background:var(--accent2);opacity:0;display:grid;place-items:center;font-size:18px;color:#fff;box-shadow:0 4px 14px rgba(168,85,247,.4);}
+.avatar-wrap.thinking .think-bubble{opacity:1;animation:bubblePop .6s ease-out;}
+@keyframes bubblePop{from{transform:scale(0);}to{transform:scale(1);}}
+.think-bubble::after{content:'';position:absolute;bottom:-4px;left:8px;width:8px;height:8px;background:var(--accent2);border-radius:50%;}
+
+.exec-icon{position:absolute;top:-6px;right:-14px;width:32px;height:32px;border-radius:50%;background:var(--ok);opacity:0;display:grid;place-items:center;font-size:16px;color:#000;font-weight:700;box-shadow:0 4px 14px rgba(34,197,94,.4);}
+.avatar-wrap.executing .exec-icon{opacity:1;animation:spin .8s linear infinite;}
+
+.alert-icon{position:absolute;top:-6px;right:-14px;width:32px;height:32px;border-radius:50%;background:var(--danger);opacity:0;display:grid;place-items:center;font-size:18px;color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(239,68,68,.5);}
+.avatar-wrap.alert .alert-icon{opacity:1;animation:bellShake .8s ease-in-out infinite;}
+@keyframes bellShake{0%,100%{transform:rotate(0);}25%{transform:rotate(-15deg);}75%{transform:rotate(15deg);}}
+
+.dot.think{background:var(--accent2);box-shadow:0 0 14px var(--accent2);}
+
+/* 待办输入与快捷状态 */
+.todo-input-row{display:flex;gap:6px;margin-bottom:10px;}
+.todo-input{flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-size:.82rem;outline:none;}
+.todo-input:focus{border-color:var(--accent);}
+.todo-add{padding:8px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-size:.82rem;cursor:pointer;}
+.todo-add:hover{background:#4f46e5;}
+.todo-list{max-height:52vh;overflow-y:auto;padding-right:4px;}
+.todo-item{animation:msgIn .3s ease;}
+.todo-item.done .todo-text{text-decoration:line-through;color:var(--muted);}
+.todo-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px;line-height:1;}
+.todo-del:hover{color:var(--danger);}
+.todo-total{font-size:.7rem;color:var(--muted);font-weight:400;}
+
+.quick-states{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:35;}
+.qs{padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--dim);font-size:.74rem;cursor:pointer;transition:.2s;}
+.qs:hover{border-color:var(--accent2);color:var(--text);}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 </style>
 </head>
 <body class="wall-mode">
@@ -123,7 +187,15 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
 </div>
 <div class="stage">
   <div class="char-card" id="card">
-    <div class="avatar-wrap" id="avatarWrap"><div class="face" id="face"><div class="eyes"><div class="eye l"></div><div class="eye r"></div></div><div class="brows"><div class="brow l"></div><div class="brow r"></div></div><div class="mouth"></div></div><img id="avatar" alt="avatar" src="">
+  <div class="state-bar" id="stateBar"><div class="fill" id="stateFill"></div></div>
+  <div class="avatar-wrap" id="avatarWrap">
+    <div class="ring"></div>
+    <div class="zzz">Z</div>
+    <div class="think-bubble">💡</div>
+    <div class="exec-icon">⚙</div>
+    <div class="alert-icon">!</div>
+    <div class="face" id="face" style="display:none"><div class="eyes"><div class="eye l"></div><div class="eye r"></div></div><div class="brows"><div class="brow l"></div><div class="brow r"></div></div><div class="mouth"></div></div>
+    <canvas id="charCanvas" width="220" height="220" style="display:block;"></canvas>
     </div>
     <div class="char-status"><span class="dot ok" id="dot"></span><span id="statusText">待命中</span></div>
     <div class="char-name" id="name">小助手</div>
@@ -140,8 +212,21 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
     </div>
   </div>
   <div class="todo-panel" id="todoPanel">
-    <h3>今日代办 <span id="prog">0/0</span></h3>
-    <div id="todoList" class="empty-todo">加载待办中...</div>
+    <div class="panel">
+      <h3>今日代办 <span class="todo-total" id="prog">0/0</span></h3>
+      <div class="todo-input-row">
+        <input class="todo-input" id="todoInput" type="text" placeholder="添加待办… 回车提交" maxlength="80">
+        <button class="todo-add" id="todoAdd">+</button>
+      </div>
+      <div class="todo-list" id="todoList"><div class="empty-todo">加载待办中...</div></div>
+    </div>
+  </div>
+  <div class="quick-states" id="quickStates">
+    <button class="qs" onclick="setState('sleeping')">😴 睡眠</button>
+    <button class="qs" onclick="setState('talking')">💬 对话</button>
+    <button class="qs" onclick="setState('thinking')">🤔 思考</button>
+    <button class="qs" onclick="setState('executing')">⚙ 执行</button>
+    <button class="qs" onclick="startVoice()" style="color:var(--accent2);border-color:var(--accent2);">🎤 语音</button>
   </div>
   <div class="style-switch" id="styleSwitch">
     <button class="btn active" data-style="manus" onclick="setStyle(this,'manus')">Manus 像素玩偶</button>
@@ -170,6 +255,8 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
 const API='http://127.0.0.1:8765';
 let currentStyle='manus';
 let ttsEnabled=false, loginAlert=true, todoAlert=true;
+let curState='idle';
+let idleTimer=null;
 
 // 粒子背景
 (function(){
@@ -189,35 +276,699 @@ let ttsEnabled=false, loginAlert=true, todoAlert=true;
 // 时钟
 (function tick(){const n=new Date();document.getElementById('t').textContent=n.toLocaleTimeString('zh-CN',{hour12:false});document.getElementById('d').textContent=n.toLocaleDateString('zh-CN',{weekday:'short',month:'numeric',day:'numeric'});setTimeout(tick,1000);})();
 
-// 角色表情/说话
-function say(txt,cls='bot'){const chat=document.getElementById('chat');const m=document.createElement('div');m.className='msg '+cls;m.textContent=txt;chat.appendChild(m);chat.scrollTop=chat.scrollHeight;return m;}
-function setTalk(v){const w=document.getElementById('avatarWrap');if(v)w.classList.add('talking');else w.classList.remove('talking');}
-function setThink(v){const w=document.getElementById('avatarWrap');if(v)w.classList.add('thinking');else w.classList.remove('thinking');}
-function typeText(el,txt,cb){let i=0;el.textContent='';const t=setInterval(()=>{el.textContent+=txt[i++];if(i>=txt.length){clearInterval(t);if(cb)cb();}},25);}
+// ── 四状态动效引擎 ─────────────────────────────────────
+const STATE_UI={
+  idle:      {cls:'idle',      dot:'',         text:'待命中',   bar:'',       fill:'30%'},
+  sleeping:  {cls:'sleeping', dot:'sleep',    text:'休眠中',   bar:'sleep',  fill:'20%'},
+  talking:   {cls:'talking',  dot:'ok',       text:'对话中',   bar:'',       fill:'60%'},
+  thinking:  {cls:'thinking', dot:'think',    text:'思考中…',  bar:'warn',   fill:'45%'},
+  executing: {cls:'executing',dot:'ok',       text:'执行任务', bar:'ok',     fill:'75%'},
+  alert:     {cls:'alert',    dot:'danger',   text:'安全预警', bar:'warn',   fill:'90%'},
+};
+function setState(s){
+  curState=s;
+  const u=STATE_UI[s]||STATE_UI.idle;
+  const w=document.getElementById('avatarWrap');
+  Object.values(STATE_UI).forEach(x=>w.classList.remove(x.cls));
+  w.classList.add(u.cls);
+  const bar=document.getElementById('stateBar');
+  bar.className='state-bar '+(u.bar||'');
+  document.getElementById('stateFill').style.width=u.fill;
+  document.getElementById('dot').className='dot '+(u.dot||'');
+  document.getElementById('statusText').textContent=u.text;
+  clearTimeout(idleTimer);
+  if(s!=='idle'&&s!=='sleeping'){
+    idleTimer=setTimeout(()=>setState('idle'),12000);
+  }
+  if(window.pokeChar)window.pokeChar(); // 状态切换 → 预备动作(弹一下)
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  二次元桌宠渲染引擎（参考 AniMate 桌宠 / 3D 卡通渲染）
+//  全身立绘 + cel-shading 分层明暗 + 边缘光 + 地面投影 + 视差
+//  呼吸起伏 · 随机眨眼 · 视线/头部跟随 · 头发&裙摆&手臂弹簧跟随(过冲)
+//  squash & stretch · 状态切换预备动作 · 表情状态机
+// ══════════════════════════════════════════════════════════════════
+const CHAR_SKIN={
+  manus:{hair:'#8f7cf5',hairDark:'#5646c7',hairLit:'#d3c8ff',eyeTop:'#312a9c',eyeBot:'#5eead4',skin:'#ffe4d4',skinShade:'#f0bdA6',blush:'#ff8fa8',cloth:'#4f46e5',clothDark:'#2c2a78',lash:'#3b2f8f'},
+  hot:  {hair:'#ff9ecd',hairDark:'#be5a97',hairLit:'#ffdcef',eyeTop:'#831843',eyeBot:'#fda4af',skin:'#ffe8de',skinShade:'#f3c2b1',blush:'#ff6f91',cloth:'#db2777',clothDark:'#8d1546',lash:'#a13a6d'},
+  hard: {hair:'#98a2b3',hairDark:'#3f4a5c',hairLit:'#e2e8f0',eyeTop:'#7f1d1d',eyeBot:'#fb923c',skin:'#f0d8c6',skinShade:'#d3ac93',blush:'#c96a72',cloth:'#334155',clothDark:'#111c30',lash:'#3f4a5a'},
+};
+let PAL=CHAR_SKIN.manus;
+
+const cvsEl=document.getElementById('charCanvas');
+const cg=cvsEl.getContext('2d');
+const CW=260, CH=372, DPR=Math.min(window.devicePixelRatio||1,2);
+cvsEl.width=CW*DPR; cvsEl.height=CH*DPR;
+cvsEl.style.width=CW+'px'; cvsEl.style.height=CH+'px';
+
+// 全身骨架关键高度（脚底 y=0，向上为负）
+const SK={head:-268,neck:-230,sh:-214,waist:-152,hip:-150,knee:-76,foot:-8};
+const HEAD_S=0.62;                       // 头部缩放 → 约 3.4 头身 chibi
+
+const PET={
+  t:0, popT:9, popOn:false,
+  look:{x:0,y:0}, lookT:{x:0,y:0}, head:{x:0,y:0},
+  hair:{a:0,v:0}, side:{a:0,v:0}, ahoge:{a:0,v:0},
+  mouth:{a:0,v:0}, bounce:{a:0,v:0},
+  armL:{a:0,v:0}, armLb:{a:0,v:0}, armR:{a:0,v:0}, armRb:{a:0,v:0},
+  skirt:{a:0,v:0},
+  blink:0, blinkT:1.4, blinkP:-1, happy:0, parts:[],
+};
+const _ease=x=>x*x*(3-2*x);
+const _clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function _spring(s,target,stiff,damp,dt){s.v+=((target-s.a)*stiff-s.v*damp)*dt;s.a+=s.v*dt;}
+function _spawnFx(n,kind){
+  for(let i=0;i<n;i++)PET.parts.push({x:(Math.random()-.5)*96,y:SK.head-10-Math.random()*60,
+    vx:(Math.random()-.5)*52,vy:-38-Math.random()*44,life:1,r:2+Math.random()*2,kind});
+}
+window.pokeChar=function(){PET.popT=0;PET.popOn=true;_spawnFx(6,'star');};
+
+function drawChar(dt){
+  dt=_clamp(dt||0.016,0.001,0.05);
+  PET.t+=dt;
+  const sleep=curState==='sleeping',talk=curState==='talking',
+        think=curState==='thinking',exec=curState==='executing',alert=curState==='alert';
+
+  // ① 眨眼：随机间隔，快闭慢睁
+  PET.happy=Math.max(0,PET.happy-dt*0.55);
+  if(sleep){PET.blink=1;PET.blinkP=-1;}
+  else{
+    PET.blinkT-=dt;
+    if(PET.blinkT<=0&&PET.blinkP<0){PET.blinkP=0;PET.blinkT=1.6+Math.random()*3.6;}
+    if(PET.blinkP>=0){
+      PET.blinkP+=dt;
+      PET.blink=PET.blinkP<0.085?_ease(PET.blinkP/0.085)
+               :PET.blinkP<0.225?1-_ease((PET.blinkP-0.085)/0.14):0;
+      if(PET.blinkP>0.225)PET.blinkP=-1;
+    }
+  }
+
+  // ② 视线 + 头部朝向：缓动追踪，思考时抬眼
+  const lx=PET.lookT.x, ly=think?PET.lookT.y-0.45:alert?PET.lookT.y+0.1:PET.lookT.y;
+  PET.look.x+=(lx-PET.look.x)*Math.min(1,dt*7);
+  PET.look.y+=(ly-PET.look.y)*Math.min(1,dt*7);
+  const hx=sleep?0:talk?lx*0.45+Math.sin(PET.t*3.1)*0.10:lx*0.6;
+  const hy=sleep?0.22:ly*0.5;
+  PET.head.x+=(hx-PET.head.x)*Math.min(1,dt*3.4);
+  PET.head.y+=(hy-PET.head.y)*Math.min(1,dt*3.4);
+
+  // ③ 弹簧跟随：头发 / 裙摆 / 双臂（滞后 + 过冲）
+  _spring(PET.hair ,-PET.head.x*0.26+Math.sin(PET.t*1.10)*0.02,110,9.5,dt);
+  _spring(PET.side ,-PET.head.x*0.42+Math.sin(PET.t*1.35+1)*0.03, 82,7.6,dt);
+  _spring(PET.ahoge,-PET.head.x*0.90+Math.sin(PET.t*1.90)*0.10, 54,4.8,dt);
+  _spring(PET.skirt,-PET.head.x*0.34+Math.sin(PET.t*0.62+1.2)*0.02,60,7.0,dt);
+  const sway=Math.sin(PET.t*0.62);
+  const pose={
+    idle:  {A: 0.13+sway*0.03, B: 0.10+sway*0.05},
+    talk:  {A: 0.16+Math.sin(PET.t*6.2)*0.10, B:-0.30-Math.abs(Math.sin(PET.t*6.2))*0.22},
+    think: {A: 2.55, B:-1.15},
+    exec:  {A: 0.50, B:-0.95},
+    alert: {A: 0.35, B:-0.55},
+    sleep: {A: 0.04, B: 0.04},
+  };
+  const P0=sleep?pose.sleep:think?pose.think:exec?pose.exec:alert?pose.alert:talk?pose.talk:pose.idle;
+  const lA=think?0.14:P0.A, lB=think?0.10:P0.B;   // 思考时只抬一侧手臂
+  _spring(PET.armL ,lA+sway*0.02, 70,8.6,dt);
+  _spring(PET.armR ,P0.A-sway*0.02, 70,8.6,dt);
+  _spring(PET.armLb,lB, 70,8.6,dt);
+  _spring(PET.armRb,P0.B, 70,8.6,dt);
+
+  // ④ 嘴部开合
+  let mT=0;
+  if(talk)      mT=0.45+0.42*Math.abs(Math.sin(PET.t*13.5));
+  else if(alert)mT=0.34+0.18*Math.abs(Math.sin(PET.t*7));
+  else if(exec) mT=0.22;
+  else if(think)mT=0.10;
+  else if(sleep)mT=0.05;
+  _spring(PET.mouth,mT,240,21,dt);
+
+  // ⑤ 呼吸 + 弹跳 + 状态切换挤压拉伸
+  _spring(PET.bounce,0,170,13,dt);
+  if(PET.popOn){PET.popT+=dt;if(PET.popT>1.3)PET.popOn=false;}
+  const pop=PET.popOn?Math.sin(PET.popT*17)*Math.exp(-PET.popT*5.5):0;
+  const br=Math.sin(PET.t*(sleep?0.85:exec?2.1:1.45));
+  const squint=Math.max(PET.blink,PET.happy*0.55);
+
+  for(let i=PET.parts.length-1;i>=0;i--){
+    const p=PET.parts[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;p.life-=dt*0.85;
+    if(p.life<=0)PET.parts.splice(i,1);
+  }
+
+  // ══════ 绘制 ══════
+  const g=cg;
+  g.setTransform(DPR,0,0,DPR,0,0);
+  g.clearRect(0,0,CW,CH);
+  const sp=g.createRadialGradient(CW/2,CH*0.66,10,CW/2,CH*0.66,CH*0.52);
+  sp.addColorStop(0,'rgba(99,102,241,.18)');sp.addColorStop(1,'rgba(99,102,241,0)');
+  g.fillStyle=sp;g.fillRect(0,0,CW,CH);
+
+  g.save();
+  g.translate(CW/2,CH-18);                                   // 脚底锚点
+  g.scale(1-0.010*br-0.045*pop+0.012*PET.happy, 1+0.014*br+0.07*pop); // squash & stretch（以脚为支点）
+  g.translate(0,PET.bounce.a*0.22);
+  drawFullBody(g,squint,talk,think,exec,alert,sleep,br);
+  drawFx(g,think,exec,alert,sleep);
+  g.restore();
+}
+
+// ── cel-shading 零件：底色 + 硬边暗部 + 边缘光 + 外轮廓 ──
+function part(g,pathFn,base,bb){
+  g.save();
+  pathFn(g);g.fillStyle=base;g.fill();
+  g.save();g.clip();
+  const sh=g.createLinearGradient(bb.x,0,bb.x+bb.w,0);
+  sh.addColorStop(0,'rgba(255,255,255,.18)');
+  sh.addColorStop(.28,'rgba(255,255,255,0)');
+  sh.addColorStop(.58,'rgba(0,0,0,0)');
+  sh.addColorStop(.59,'rgba(14,8,38,.30)');
+  sh.addColorStop(1,'rgba(14,8,38,.44)');
+  g.fillStyle=sh;g.fillRect(bb.x,bb.y,bb.w,bb.h);
+  const rg=g.createLinearGradient(bb.x+bb.w,bb.y,bb.x,bb.y+bb.h);
+  rg.addColorStop(0,'rgba(255,255,255,.34)');rg.addColorStop(.42,'rgba(255,255,255,0)');
+  g.strokeStyle=rg;g.lineWidth=5;pathFn(g);g.stroke();
+  g.restore();
+  g.strokeStyle='rgba(18,10,38,.34)';g.lineWidth=1.5;pathFn(g);g.stroke();
+  g.restore();
+}
+// ── 圆柱状肢体：沿法线方向的明暗渐变 ──
+function limb(g,x0,y0,x1,y1,w,base){
+  g.save();g.lineCap='round';
+  g.strokeStyle=base;g.lineWidth=w;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();
+  const a=Math.atan2(y1-y0,x1-x0),nx=Math.cos(a-Math.PI/2),ny=Math.sin(a-Math.PI/2);
+  const gr=g.createLinearGradient(x0+nx*w*.5,y0+ny*w*.5,x0-nx*w*.5,y0-ny*w*.5);
+  gr.addColorStop(0,'rgba(255,255,255,.24)');gr.addColorStop(.42,'rgba(255,255,255,0)');
+  gr.addColorStop(.60,'rgba(0,0,0,0)');gr.addColorStop(.61,'rgba(14,8,38,.26)');
+  gr.addColorStop(1,'rgba(14,8,38,.40)');
+  g.strokeStyle=gr;g.stroke();
+  g.restore();
+}
+
+// ── 全身：腿 → 裙 → 躯干 → 手臂 → 头 ──
+function drawFullBody(g,squint,talk,think,exec,alert,sleep,br){
+  const sway=Math.sin(PET.t*0.62)*2.4;                       // 重心慢摆
+  const lean=PET.head.x*0.06;
+
+  // 地面投影（随呼吸/弹跳缩放）
+  const shR=50*(1+0.02*br)-PET.bounce.a*0.05;
+  g.save();
+  const shg=g.createRadialGradient(0,-2,3,0,-2,Math.max(20,shR));
+  shg.addColorStop(0,'rgba(0,0,0,.5)');shg.addColorStop(.55,'rgba(0,0,0,.18)');shg.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=shg;g.beginPath();g.ellipse(0,-3,Math.max(20,shR),Math.max(8,shR*0.28),0,0,Math.PI*2);g.fill();
+  g.restore();
+
+  // 腿 + 鞋
+  for(const s of [-1,1]){
+    const hx=s*17, kx=s*15+sway*0.5, ax=s*12+sway*0.9;
+    part(g,function(p){
+      p.beginPath();
+      p.moveTo(hx-15,SK.hip+8);
+      p.bezierCurveTo(hx-17,SK.hip-24,kx-16,SK.knee-16,kx-14,SK.knee);
+      p.bezierCurveTo(kx-15,SK.knee+22,ax-12,SK.foot-26,ax-10,SK.foot-9);
+      p.lineTo(ax+10,SK.foot-9);
+      p.bezierCurveTo(ax+12,SK.foot-26,kx+15,SK.knee+22,kx+14,SK.knee);
+      p.bezierCurveTo(kx+16,SK.knee-16,hx+17,SK.hip-24,hx+15,SK.hip+8);
+      p.closePath();
+    },PAL.skin,{x:hx-22,y:SK.hip-6,w:44,h:SK.foot+12-(SK.hip-6)});
+    part(g,function(p){                                       // 鞋
+      p.beginPath();
+      p.moveTo(ax-11,SK.foot-10);p.lineTo(ax+11,SK.foot-10);
+      p.bezierCurveTo(ax+15,SK.foot-2,ax+18,SK.foot+1,ax+5,SK.foot+2);
+      p.lineTo(ax-12,SK.foot+2);
+      p.bezierCurveTo(ax-16,SK.foot+1,ax-15,SK.foot-5,ax-11,SK.foot-10);
+      p.closePath();
+    },PAL.clothDark,{x:ax-20,y:SK.foot-12,w:40,h:SK.foot+6-(SK.foot-12)});
+  }
+
+  // 裙摆（滞后摆动）
+  g.save();
+  g.translate(0,SK.waist);g.rotate(PET.skirt.a*0.55);g.translate(0,-SK.waist);
+  part(g,function(p){
+    p.beginPath();
+    p.moveTo(-25,SK.waist-4);
+    p.bezierCurveTo(-42,SK.waist+16,-47,SK.hip+34,-45,SK.hip+44);
+    p.quadraticCurveTo(-31,SK.hip+54,-17,SK.hip+43);
+    p.quadraticCurveTo(-6,SK.hip+54,5,SK.hip+43);
+    p.quadraticCurveTo(19,SK.hip+54,31,SK.hip+43);
+    p.quadraticCurveTo(42,SK.hip+52,45,SK.hip+44);
+    p.bezierCurveTo(47,SK.hip+34,42,SK.waist+16,25,SK.waist-4);
+    p.closePath();
+  },PAL.clothDark,{x:-50,y:SK.waist-8,w:100,h:SK.hip+58-(SK.waist-8)});
+  g.save();g.globalAlpha=.30;g.strokeStyle='#1a1030';g.lineWidth=2;
+  for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(i*9,SK.waist+2);g.quadraticCurveTo(i*13,SK.hip+22,i*15,SK.hip+42);g.stroke();}
+  g.restore();
+  g.restore();
+
+  // 上半身（绕腰轻微倾斜 → 视差）
+  g.save();
+  g.translate(0,SK.waist);g.rotate(lean);g.translate(0,-SK.waist);
+
+  drawArm(g,-1,PET.armR.a,PET.armRb.a);                        // 远侧手臂先画，肩头被躯干压住 → 前后层次
+
+  part(g,function(p){                                          // 脖子
+    p.beginPath();p.moveTo(-11,SK.neck);p.lineTo(11,SK.neck);
+    p.lineTo(13,SK.sh+4);p.lineTo(-13,SK.sh+4);p.closePath();
+  },PAL.skinShade,{x:-16,y:SK.neck-4,w:32,h:SK.sh+8-(SK.neck-4)});
+
+  part(g,function(p){                                          // 躯干/外套
+    p.beginPath();
+    p.moveTo(-31,SK.sh+8);
+    p.bezierCurveTo(-36,SK.sh-4,-22,SK.sh-13,-12,SK.sh-15);
+    p.lineTo(12,SK.sh-15);
+    p.bezierCurveTo(22,SK.sh-13,36,SK.sh-4,31,SK.sh+8);
+    p.bezierCurveTo(29,SK.waist-6,27,SK.waist+8,25,SK.waist+14);
+    p.lineTo(-25,SK.waist+14);
+    p.bezierCurveTo(-27,SK.waist+8,-29,SK.waist-6,-31,SK.sh+8);
+    p.closePath();
+  },PAL.cloth,{x:-40,y:SK.sh-18,w:80,h:SK.waist+18-(SK.sh-18)});
+
+  part(g,function(p){                                          // V 领
+    p.beginPath();p.moveTo(-13,SK.sh-12);p.lineTo(0,SK.sh+14);
+    p.lineTo(13,SK.sh-12);p.quadraticCurveTo(0,SK.sh-16,-13,SK.sh-12);p.closePath();
+  },PAL.skinShade,{x:-16,y:SK.sh-16,w:32,h:34});
+  g.fillStyle=PAL.blush;                                       // 领结
+  g.beginPath();g.moveTo(-6,SK.sh-6);g.lineTo(-17,SK.sh-11);g.lineTo(-17,SK.sh+1);g.closePath();g.fill();
+  g.beginPath();g.moveTo(6,SK.sh-6);g.lineTo(17,SK.sh-11);g.lineTo(17,SK.sh+1);g.closePath();g.fill();
+  g.fillStyle=PAL.hairLit;g.beginPath();g.arc(0,SK.sh-6,3.6,0,Math.PI*2);g.fill();
+
+  drawArm(g,1,PET.armL.a,PET.armLb.a);                         // 近侧手臂压在躯干之上
+
+  // 头（复用近景表情系统，整体缩放为 chibi 头身比）
+  g.save();
+  g.translate(PET.head.x*4.5, SK.head+(sleep?7:0)+br*1.5);
+  g.rotate(PET.head.x*0.16+PET.happy*0.05*Math.sin(PET.t*8)+(sleep?0.13:0));
+  g.scale(HEAD_S,HEAD_S);
+  drawHairBack(g);
+  drawFace(g);
+  drawEyes(g,squint);
+  drawBlush(g,sleep);
+  drawMouth(g,talk,think,exec,alert,sleep);
+  drawHairFront(g);
+  drawBrows(g,think,exec,alert,sleep);
+  g.restore();
+
+  g.restore();
+}
+
+// ── 手臂：上臂(袖) + 前臂(皮肤) + 手 ──
+function drawArm(g,s,A,B){
+  const L1=34,L2=32;
+  const sx=s*29, sy=SK.sh+6;
+  const ex=sx+s*Math.sin(A)*L1, ey=sy+Math.cos(A)*L1;
+  const hx=ex+s*Math.sin(B)*L2, hy=ey+Math.cos(B)*L2;
+  limb(g,sx,sy,ex,ey,23,PAL.cloth);
+  limb(g,ex,ey,hx,hy,17,PAL.skin);
+  g.save();
+  g.fillStyle=PAL.skin;g.beginPath();g.arc(hx,hy,9,0,Math.PI*2);g.fill();
+  g.fillStyle='rgba(255,255,255,.22)';g.beginPath();g.arc(hx-2.5,hy-3,5,0,Math.PI*2);g.fill();
+  g.restore();
+}
+
+function drawFace(g){
+  const w=54,h=62;
+  const sg=g.createLinearGradient(-18,-46,22,58);
+  sg.addColorStop(0,'#fff3ea');sg.addColorStop(.5,PAL.skin);sg.addColorStop(1,PAL.skinShade);
+  g.fillStyle=PAL.skinShade;
+  [-1,1].forEach(s=>{g.beginPath();g.ellipse(s*w*0.99,6,7,11,0,0,Math.PI*2);g.fill();});
+  g.fillStyle=sg;
+  g.beginPath();
+  g.moveTo(-w,-h*0.10);
+  g.bezierCurveTo(-w*1.03,h*0.42,-w*0.60,h*0.98,0,h*1.02);
+  g.bezierCurveTo(w*0.60,h*0.98,w*1.03,h*0.42,w,-h*0.10);
+  g.bezierCurveTo(w*1.02,-h*0.86,w*0.55,-h*1.12,0,-h*1.12);
+  g.bezierCurveTo(-w*0.55,-h*1.12,-w*1.02,-h*0.86,-w,-h*0.10);
+  g.closePath();g.fill();
+  g.fillStyle='rgba(255,255,255,.35)';             // 额头高光
+  g.beginPath();g.ellipse(-14,-34,20,11,-0.35,0,Math.PI*2);g.fill();
+  g.fillStyle='rgba(150,90,80,.22)';               // 鼻影
+  g.beginPath();g.arc(1,26,2.4,0,Math.PI*2);g.fill();
+}
+
+// ── 眼睛：大眼 + 渐变虹膜 + 双层高光 + 睫毛，眨眼时纵向压扁 ──
+function drawEyes(g,squint){
+  const open=1-squint;
+  for(const s of [-1,1]){
+    const ex=s*25, ey=2;
+    if(open<0.14){                                 // 闭眼 / 开心眯眼 ^ ^
+      g.strokeStyle=PAL.lash;g.lineWidth=4.6;g.lineCap='round';
+      const up=PET.happy>0.2;
+      g.beginPath();g.moveTo(ex-14,ey-3);
+      g.quadraticCurveTo(ex,ey+(up?-9:9),ex+14,ey-3);g.stroke();
+      g.lineWidth=3;
+      g.beginPath();g.moveTo(ex+s*13,ey-1);g.lineTo(ex+s*19,ey-5);g.stroke();
+      continue;
+    }
+    const h=26*open+1;
+    g.beginPath();                                 // 杏仁眼形
+    g.moveTo(ex-15,ey+2);
+    g.bezierCurveTo(ex-13,ey-h*0.80,ex+13,ey-h*0.80,ex+15,ey+2);
+    g.bezierCurveTo(ex+10,ey+h*0.52,ex-10,ey+h*0.52,ex-15,ey+2);
+    g.closePath();
+    g.save();g.clip();
+    g.fillStyle='#fdfaff';g.fill();
+    const ix=ex+PET.look.x*5.2, iy=ey-1+PET.look.y*4.0;
+    const ig=g.createLinearGradient(ix,iy-13,ix,iy+13);
+    ig.addColorStop(0,PAL.eyeTop);ig.addColorStop(1,PAL.eyeBot);
+    g.fillStyle=ig;
+    g.beginPath();g.ellipse(ix,iy,10.5,13,0,0,Math.PI*2);g.fill();
+    g.fillStyle='#100a24';
+    g.beginPath();g.ellipse(ix,iy,5.2,7.2,0,0,Math.PI*2);g.fill();
+    g.fillStyle='rgba(255,255,255,.95)';
+    g.beginPath();g.ellipse(ix-4,iy-6,4.4,5.6,-0.4,0,Math.PI*2);g.fill();
+    g.globalAlpha=.75;
+    g.beginPath();g.ellipse(ix+4.5,iy+6,2.2,2.8,0,0,Math.PI*2);g.fill();
+    g.globalAlpha=1;
+    const sg=g.createLinearGradient(0,ey-h*0.7,0,ey+h*0.2);   // 上眼睑投影
+    sg.addColorStop(0,'rgba(0,0,0,.38)');sg.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=sg;g.fillRect(ex-16,ey-h,32,h*1.2);
+    g.restore();
+    g.strokeStyle=PAL.lash;g.lineWidth=5;g.lineCap='round';   // 上睫毛
+    g.beginPath();
+    g.moveTo(ex-15,ey+2);
+    g.bezierCurveTo(ex-13,ey-h*0.80,ex+13,ey-h*0.80,ex+15,ey+2);
+    g.stroke();
+    g.lineWidth=3.4;                                          // 外眼角上挑
+    g.beginPath();g.moveTo(ex+s*14,ey+1);g.quadraticCurveTo(ex+s*20,ey-3,ex+s*23,ey-8);g.stroke();
+    g.strokeStyle='rgba(60,40,80,.32)';g.lineWidth=1.6;       // 下眼睑
+    g.beginPath();g.moveTo(ex-13,ey+h*0.42);g.quadraticCurveTo(ex,ey+h*0.62,ex+13,ey+h*0.42);g.stroke();
+  }
+}
+
+// ── 眉毛：思考压内、执行下压、预警上挑、安睡舒展 ──
+function drawBrows(g,think,exec,alert,sleep){
+  let inn=1,out=-1;
+  if(think){inn=-5;out=1;} else if(exec){inn=5;out=-1;} else if(alert){inn=-4;out=-4;} else if(sleep){inn=2;out=1;}
+  for(const s of [-1,1]){
+    g.strokeStyle=PAL.lash;g.lineWidth=3.4;g.lineCap='round';
+    g.beginPath();
+    g.moveTo(s*25-13,-26-out);
+    g.quadraticCurveTo(s*25,-29-inn*0.4,s*25+13,-26-inn);
+    g.stroke();
+  }
+}
+
+function drawBlush(g,sleep){
+  const a=0.20+PET.happy*0.38+(sleep?0.04:0.06);
+  for(const s of [-1,1]){
+    const x=s*38,y=19;
+    const rg=g.createRadialGradient(x,y,1,x,y,17);
+    rg.addColorStop(0,'rgba(255,120,150,'+a.toFixed(3)+')');
+    rg.addColorStop(1,'rgba(255,120,150,0)');
+    g.fillStyle=rg;g.beginPath();g.ellipse(x,y,16,10,0,0,Math.PI*2);g.fill();
+  }
+}
+
+function drawMouth(g,talk,think,exec,alert,sleep){
+  const y=36;
+  g.save();g.lineCap='round';g.lineWidth=3;
+  g.strokeStyle='rgba(140,60,80,.9)';g.fillStyle='#8f2f4d';
+  const o=_clamp(PET.mouth.a,0,1);
+  if(talk){                                        // 说话：开合 + 舌头
+    const hh=5+18*o;
+    g.beginPath();g.ellipse(0,y+hh*0.25,10,hh*0.5+2,0,0,Math.PI*2);g.fill();
+    g.fillStyle=PAL.blush;
+    g.beginPath();g.ellipse(0,y+hh*0.62,6.5,hh*0.3,0,0,Math.PI);g.fill();
+  } else if(exec){                                 // 执行：自信笑
+    const hh=4+11*o;
+    g.beginPath();g.moveTo(-12,y-3);g.quadraticCurveTo(0,y-5,12,y-3);
+    g.quadraticCurveTo(0,y+hh+4,-12,y-3);g.fill();
+  } else if(alert){                                // 预警：小 o
+    g.beginPath();g.ellipse(0,y+2,6,4+5*o,0,0,Math.PI*2);g.fill();
+  } else if(think){                                // 思考：抿嘴偏一边
+    g.beginPath();g.moveTo(-3,y+1);g.lineTo(11,y-3);g.stroke();
+  } else if(sleep){                                // 安睡
+    g.beginPath();g.moveTo(-8,y-1);g.quadraticCurveTo(0,y+5,8,y-1);g.stroke();
+  } else {                                         // 待命：浅笑（开心时放大）
+    g.beginPath();g.moveTo(-11,y-2);g.quadraticCurveTo(0,y+5+PET.happy*6,11,y-2);g.stroke();
+  }
+  g.restore();
+}
+
+// ── 后发（轮廓）──
+function drawHairBack(g){
+  g.fillStyle=PAL.hairDark;
+  g.beginPath();
+  g.moveTo(-58,-20);
+  g.bezierCurveTo(-82,18,-78,72,-57,94);
+  g.bezierCurveTo(-34,106,34,106,57,94);
+  g.bezierCurveTo(78,72,82,18,58,-20);
+  g.bezierCurveTo(40,-72,-40,-72,-58,-20);
+  g.closePath();g.fill();
+}
+
+// ── 前发：侧发(滞后摆动) + 刘海 + 高光 + 呆毛(最大过冲) ──
+function drawHairFront(g){
+  for(const s of [-1,1]){                          // 侧发
+    g.save();g.translate(0,-58);g.rotate(PET.side.a*s*0.9);g.translate(0,58);
+    g.fillStyle=PAL.hair;
+    g.beginPath();
+    g.moveTo(s*52,-52);
+    g.bezierCurveTo(s*73,-16,s*75,42,s*58,80);
+    g.bezierCurveTo(s*52,90,s*42,84,s*46,66);
+    g.bezierCurveTo(s*55,26,s*53,-8,s*44,-44);
+    g.closePath();g.fill();
+    g.restore();
+  }
+  g.save();                                        // 刘海
+  g.translate(0,-58);g.rotate(PET.hair.a);g.translate(0,58);
+  g.fillStyle=PAL.hair;
+  g.beginPath();
+  g.moveTo(-58,-12);
+  g.bezierCurveTo(-62,-62,-36,-89,0,-89);
+  g.bezierCurveTo(36,-89,62,-62,58,-12);
+  g.lineTo(49,-8);g.lineTo(41,-20);g.lineTo(31,-6);g.lineTo(21,-18);
+  g.lineTo(11,-6);g.lineTo(0,-14);g.lineTo(-11,-6);g.lineTo(-21,-18);
+  g.lineTo(-31,-6);g.lineTo(-41,-20);g.lineTo(-49,-8);
+  g.closePath();g.fill();
+  g.strokeStyle=PAL.hairLit;g.globalAlpha=.55;g.lineWidth=10;g.lineCap='round';
+  g.beginPath();g.arc(0,-58,42,Math.PI*1.12,Math.PI*1.62);g.stroke();
+  g.globalAlpha=1;
+  g.restore();
+  g.save();                                        // 呆毛
+  g.translate(4,-86);g.rotate(PET.ahoge.a);
+  g.strokeStyle=PAL.hair;g.lineWidth=7;g.lineCap='round';
+  g.beginPath();g.moveTo(0,0);g.bezierCurveTo(9,-16,25,-22,17,-34);g.stroke();
+  g.restore();
+}
+
+
+// ── 状态特效：思考泡 / 执行火花 / 预警汗滴 / 安睡 Z / 粒子 ──
+function drawFx(g,think,exec,alert,sleep){
+  const hy=SK.head;
+  if(think){
+    for(let i=0;i<3;i++){const p=(PET.t*0.9+i*0.33)%1;
+      g.save();g.globalAlpha=1-p;g.fillStyle='#c4b5fd';
+      g.beginPath();g.arc(-56+i*9,hy-16-p*14,3.4-i*0.6,0,Math.PI*2);g.fill();g.restore();}
+  }
+  if(exec){
+    for(let i=0;i<3;i++){const p=(PET.t*1.2+i*0.34)%1,a=p*Math.PI*2;
+      g.save();g.globalAlpha=1-p;g.fillStyle='#86efac';
+      g.beginPath();g.arc(Math.cos(a)*58,-150+Math.sin(a)*60,2.8,0,Math.PI*2);g.fill();g.restore();}
+  }
+  if(alert){
+    const p=(PET.t%1.8)/1.8;
+    g.save();g.globalAlpha=1-p;g.fillStyle='#7dd3fc';
+    g.beginPath();g.ellipse(34,hy+26+p*34,4,7,0,0,Math.PI*2);g.fill();g.restore();
+  }
+  if(sleep){
+    for(let i=0;i<3;i++){const p=(PET.t*0.55+i*0.34)%1;
+      g.save();g.globalAlpha=1-p;g.fillStyle='#cbd5e1';
+      g.font='bold '+(11+i*4)+'px system-ui,sans-serif';
+      g.fillText('z',46+p*16,hy-14-p*30);g.restore();}
+  }
+  for(const p of PET.parts){
+    g.save();g.globalAlpha=Math.max(0,p.life);g.translate(p.x,p.y);
+    if(p.kind==='heart'){
+      g.fillStyle='#ff7a9c';g.beginPath();
+      g.moveTo(0,4);g.bezierCurveTo(-7,-3,-3.4,-9,0,-4.6);
+      g.bezierCurveTo(3.4,-9,7,-3,0,4);g.fill();
+    }else{
+      g.fillStyle='#fff6c9';g.beginPath();
+      for(let i=0;i<8;i++){const r=i%2?p.r*0.45:p.r*1.9,a=i*Math.PI/4;
+        const X=Math.cos(a)*r,Y=Math.sin(a)*r;i?g.lineTo(X,Y):g.moveTo(X,Y);}
+      g.closePath();g.fill();
+    }
+    g.restore();
+  }
+}
+
+// 视线/头部跟随光标（相对角色中心，带死区）
+let mouseX=0,mouseY=0;
+document.addEventListener('mousemove',e=>{
+  mouseX=e.clientX/window.innerWidth-.5;
+  mouseY=e.clientY/window.innerHeight-.5;
+  const r=cvsEl.getBoundingClientRect();
+  PET.lookT.x=_clamp((e.clientX-(r.left+r.width/2))/(r.width*1.7),-1,1);
+  PET.lookT.y=_clamp((e.clientY-(r.top+r.height/2))/(r.height*1.7),-1,1);
+  const wrap=document.getElementById('avatarWrap');
+  wrap.style.transform='rotateY('+(mouseX*7).toFixed(2)+'deg) rotateX('+(-mouseY*7).toFixed(2)+'deg)';
+});
+document.getElementById('avatarWrap').style.transition='transform .18s ease-out';
+
+// 摸头：点击角色 → 弹跳 + 眯眼笑 + 爱心
+document.getElementById('avatarWrap').addEventListener('pointerdown',()=>{
+  PET.bounce.v=-270;PET.happy=1;_spawnFx(7,'heart');
+});
+
+// 主动画循环（dt 驱动，切后台不炸）
+let _last=performance.now();
+function drawCharLoop(){
+  const now=performance.now();
+  drawChar((now-_last)/1000);
+  _last=now;
+  requestAnimationFrame(drawCharLoop);
+}
+drawCharLoop();
+
+function say(cls,txt){
+  const chat=document.getElementById('chat');
+  const m=document.createElement('div');
+  m.className='msg '+cls;
+  chat.appendChild(m);
+  chat.scrollTop=chat.scrollHeight;
+  return m;
+}
+function typeText(el,txt,cb){
+  let i=0;el.textContent='';
+  const t=setInterval(()=>{
+    el.textContent+=txt[i++];
+    if(i>=txt.length){clearInterval(t);if(cb)cb();}
+  },25);
+}
+function setTalk(v){if(v)setState('talking');else if(curState==='talking')setState('idle');}
+function setThink(v){if(v)setState('thinking');else if(curState==='thinking')setState('idle');}
 
 // 风格切换
 function setStyle(btn,style){currentStyle=style;document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  const img=document.getElementById('avatar'),wrap=document.getElementById('avatarWrap'),face=document.getElementById('face');
-  const dots=['#a855f7','#ef4444','#22c55e'];
-  wrap.style.borderColor=dots[['manus','hot','hard'].indexOf(style)]||varAccent();
-  if(style==='manus'){img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230b0c10" rx="50"/><circle cx="70" cy="70" r="14" fill="%236366f1"/><circle cx="130" cy="70" r="14" fill="%236366f1"/><path d="M70 100 Q100 140 130 100" stroke="%236366f1" stroke-width="8" fill="none"/><rect x="60" y="130" width="80" height="34" rx="8" fill="%236366f1" opacity=".6"/></svg>';img.alt='像素玩偶';document.getElementById('name').textContent='小助手';document.getElementById('sub').textContent='像素风 AI 助手 · 随时待命';}
-  else if(style==='hot'){img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230b0c10" rx="50"/><circle cx="100" cy="68" r="32" fill="%23fbcfe8"/><circle cx="70" cy="62" r="7" fill="%23a855f7"/><circle cx="130" cy="62" r="7" fill="%23a855f7"/><path d="M75 90 Q100 110 125 90" stroke="%23ef4444" stroke-width="6" fill="none"/><rect x="50" y="120" width="100" height="44" rx="12" fill="%23a855f7" opacity=".55"/></svg>';img.alt='Hot 世界小姐';document.getElementById('name').textContent='瑶瑶';document.getElementById('sub').textContent='时尚风 AI 助手 · 优雅待命';}
-  else {img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230b0c10" rx="50"/><circle cx="72" cy="70" r="13" fill="%23e5e7eb"/><circle cx="128" cy="70" r="13" fill="%23e5e7eb"/><path d="M72 92 Q100 128 128 92" stroke="%23ef4444" stroke-width="7" fill="none"/><rect x="60" y="124" width="80" height="36" rx="9" fill="%23374151" opacity=".8"/><rect x="80" y="160" width="40" height="14" rx="7" fill="%23ef4444"/></svg>';img.alt='硬核男人';document.getElementById('name').textContent='铁汉';document.getElementById('sub').textContent='硬核风 AI 助手 · 极简待命';}
+  PAL=CHAR_SKIN[style]||CHAR_SKIN.manus;
+  const L={manus:['小助手','像素风 AI 助手 · 随时待命'],hot:['瑶瑶','时尚风 AI 助手 · 优雅待命'],hard:['铁汉','硬核风 AI 助手 · 极简待命']}[style];
+  document.getElementById('name').textContent=L[0];
+  document.getElementById('sub').textContent=L[1];
+  if(window.pokeChar)window.pokeChar();
   say(switchMsg[style]||'风格已切换。', 'sys');
 }
 function varAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();}
 const switchMsg={manus:'切换为像素玩偶风格，简洁可靠。',hot:'切换为优雅风格，今日有何吩咐。',hard:'切换为硬核风格，执行任务，不废话。'};
 
 // 监控
-async function fetchStats(){try{const r=await fetch(API+'/stats',{cache:'no-store'});const j=await r.json();document.getElementById('mCpu').textContent=j.cpu+'%';document.getElementById('bCpu').style.width=j.cpu+'%';document.getElementById('mMem').textContent=j.mem+'%';document.getElementById('bMem').style.width=j.mem+'%';document.getElementById('mDisk').textContent=j.disk+'%';document.getElementById('bDisk').style.width=j.disk+'%';document.getElementById('mNet').textContent=j.net||'--';document.getElementById('dotOS').className='dot '+ (j.loginAlert?'danger':'ok');document.getElementById('mLogin').textContent=j.loginAlert?'有异常登录！':'无';document.getElementById('stats').textContent=`CPU ${j.cpu}% · MEM ${j.mem}% · DISK ${j.disk}% · NET ${j.net||'--'}`;if(j.loginAlert&&loginAlert)notice('安全预警','检测到非常规登录，请核对设备。','danger');}catch(e){}}
+async function fetchStats(){
+  try{
+    const r=await fetch(API+'/stats',{cache:'no-store'});
+    const j=await r.json();
+    document.getElementById('mCpu').textContent=j.cpu+'%';
+    document.getElementById('bCpu').style.width=j.cpu+'%';
+    document.getElementById('mMem').textContent=j.mem+'%';
+    document.getElementById('bMem').style.width=j.mem+'%';
+    document.getElementById('mDisk').textContent=j.disk+'%';
+    document.getElementById('bDisk').style.width=j.disk+'%';
+    document.getElementById('mNet').textContent=j.net||'--';
+    document.getElementById('dotOS').className='dot '+(j.loginAlert?'danger':'ok');
+    document.getElementById('mLogin').textContent=j.loginAlert?'有异常登录！':'无';
+    document.getElementById('mLogin').className='v '+(j.loginAlert?'danger':'ok');
+    document.getElementById('bCpuW').className='bar'+(j.cpu>80?' warnbar':'');
+    document.getElementById('bMemW').className='bar'+(j.mem>80?' warnbar':'');
+    document.getElementById('bDiskW').className='bar'+(j.disk>85?' warnbar':'');
+    document.getElementById('stats').textContent=`CPU ${j.cpu}% · MEM ${j.mem}% · DISK ${j.disk}% · NET ${j.net||'--'}`;
+    if(j.loginAlert&&loginAlert){
+      setState('alert');
+      notice('安全预警','检测到非常规登录，请核对设备。','danger');
+    }
+  }catch(e){}
+}
 // todo
-async function fetchTodo(){try{const r=await fetch(API+'/todo',{cache:'no-store'});const j=await r.json();const el=document.getElementById('todoList');el.innerHTML='';let done=0;for(const t of j.items||[]){if(t.done)done++;const it=document.createElement('div');it.className='todo-item'+(t.done?' done':'');it.innerHTML=`<div class="checkbox" onclick="toggleTodo('${t.id}',${!t.done})">${t.done?'✓':''}</div><div><div class="todo-text">${esc(t.title)}</div><div class="todo-meta">${t.due||'无截止日期'} · ${t.cat||'一般'}</div></div>`;el.appendChild(it);}if(!j.items||!j.items.length)el.innerHTML='<div class="empty-todo">今日暂无代办</div>';document.getElementById('prog').textContent=done+'/'+(j.items||[]).length;}catch(e){}}
+async function fetchTodo(){
+  try{
+    const r=await fetch(API+'/todo',{cache:'no-store'});
+    const j=await r.json();
+    const el=document.getElementById('todoList');
+    el.innerHTML='';
+    let done=0;
+    const items=(j.items||[]).sort((a,b)=>a.done-b.done||(b.due||'').localeCompare(a.due||''));
+    for(const t of items){
+      if(t.done)done++;
+      const it=document.createElement('div');
+      it.className='todo-item'+(t.done?' done':'');
+      it.innerHTML=
+        `<div class="checkbox" onclick="toggleTodo('${t.id}',${!t.done})">${t.done?'✓':''}</div>`+
+        `<div style="flex:1;min-width:0"><div class="todo-text">${esc(t.title)}</div>`+
+        `<div class="todo-meta">${esc(t.due||'无截止日期')} · ${esc(t.cat||'一般')}</div></div>`+
+        `<button class="todo-del" onclick="delTodo('${t.id}')" title="删除">×</button>`;
+      el.appendChild(it);
+    }
+    if(!items.length)el.innerHTML='<div class="empty-todo">今日暂无代办，底部输入添加</div>';
+    document.getElementById('prog').textContent=`${done}/${items.length}`;
+  }catch(e){}
+}
+async function addTodo(){
+  const input=document.getElementById('todoInput');
+  const title=input.value.trim();
+  if(!title)return;
+  input.value='';
+  setState('executing');
+  try{
+    const r=await fetch(API+'/todo/add',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title,due:new Date().toISOString().slice(0,10),cat:'一般'})
+    });
+    const j=await r.json();
+    if(j.ok){
+      say('已添加待办：'+title,'act');
+      setState('executing');
+      setTimeout(()=>{setState('idle');fetchTodo();},800);
+    }
+  }catch(e){say('添加失败，请检查守护进程。','sys');setState('idle');}
+}
+async function toggleTodo(id,done){
+  try{
+    await fetch(API+'/todo/toggle',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id,done})});
+    setState(done?'executing':'thinking');
+    setTimeout(()=>{setState('idle');fetchTodo();},400);
+  }catch(e){}
+}
+async function delTodo(id){
+  try{
+    await fetch(API+'/todo/del',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id})});
+    fetchTodo();
+  }catch(e){}
+}
+document.getElementById('todoAdd').addEventListener('click',addTodo);
+document.getElementById('todoInput').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo();});
+
 // 登录监控
-async function fetchLogin(){try{const r=await fetch(API+'/login',{cache:'no-store'});const j=await r.json();if(j.newLogin&&loginAlert)notice('登录提醒',j.ip+' 于 '+j.time+' 登录，若非本人请立即更改密码。','warn');}catch(e){}}
+async function fetchLogin(){
+  try{
+    const r=await fetch(API+'/login',{cache:'no-store'});
+    const j=await r.json();
+    if(j.newLogin&&loginAlert){
+      setState('alert');
+      notice('登录提醒',(j.new&&j.new[0]||'新用户')+' 于 '+j.time+' 登录，若非本人请立即更改密码。','warn');
+    }
+  }catch(e){}
+}
 setInterval(fetchStats,5000);setInterval(fetchTodo,30000);setInterval(fetchLogin,10000);fetchStats();fetchTodo();fetchLogin();
 
 // 对话
-async function chat(){const input=document.getElementById('chatInput');const txt=input.value.trim();if(!txt)return;input.value='';say(txt,'me');setTalk(true);setThink(true);try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:txt,style:currentStyle})});const j=await r.json();say(j.reply||'抱歉，暂时无法回复。','bot');}catch(e){say('本地模型连接失败，请先启动 assistant_daemon.py。','sys');}setTalk(false);setThink(false);}
+async function chat(){
+  const input=document.getElementById('chatInput');
+  const txt=input.value.trim();
+  if(!txt)return;
+  input.value='';
+  say(txt,'me');
+  setState('thinking');
+  try{
+    const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:txt,style:currentStyle})});
+    const j=await r.json();
+    setState('talking');
+    const m=say('','bot');
+    typeText(m,j.reply||'抱歉，暂时无法回复。',()=>setState('idle'));
+  }catch(e){
+    say('本地模型连接失败，请先启动 assistant_daemon.py。','sys');
+    setState('idle');
+  }
+}
 
 // notice
 function notice(title,body,kind='ok'){const n=document.getElementById('notice');n.style.display='block';n.style.borderLeftColor=kind==='danger'?getComputedStyle(document.documentElement).getPropertyValue('--danger'):kind==='warn'?getComputedStyle(document.documentElement).getPropertyValue('--warn'):getComputedStyle(document.documentElement).getPropertyValue('--accent');n.innerHTML=`<div style="font-weight:700;font-size:.9rem">${esc(title)}</div><div style="color:var(--dim);font-size:.8rem;margin-top:4px">${esc(body)}</div>`;setTimeout(()=>{n.style.display='none';},6000);}
@@ -227,6 +978,58 @@ function closeSettings(){document.getElementById('settings').classList.remove('p
 function toggle(el,k){el.classList.toggle('checked');window[k] = el.classList.contains('checked');}
 // esc
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSettings();});
+
+// ── 语音引擎（Web Speech STT + TTS + 频谱口型同步） ─────────────
+let voiceActive=false, analyserNode=null, micCtx=null;
+function startVoice(){
+  if(voiceActive){say('语音已在监听中。','sys');return;}
+  say('🎤 正在监听… 请说话。','sys');
+  voiceActive=true; setState('talking');
+  try{
+    // STT: SpeechRecognition
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){
+      const rec=new SR();
+      rec.lang='zh-CN'; rec.interimResults=true; rec.maxAlternatives=1;
+      rec.onresult=e=>{
+        const transcript=Array.from(e.results).map(r=>r[0].transcript).join('');
+        if(transcript.trim().length>2){
+          document.getElementById('chatInput').value=transcript;
+          chat();
+        }
+      };
+      rec.onerror=e=>{say('语音识别出错：'+e.error,'sys');setState('idle');voiceActive=false;};
+      rec.onend=()=>{setTimeout(()=>{if(voiceActive)setState('idle');voiceActive=false;},1500);};
+      rec.start();
+    }
+    // TTS + 频谱分析（若支持）
+    const synth=window.speechSynthesis;
+    if(synth){
+      try{
+        micCtx=new (window.AudioContext||window.webkitAudioContext)();
+        analyserNode=micCtx.createAnalyser();
+        analyserNode.fftSize=128;
+        // 注：真实麦克风需要 getUserMedia，此处简化为 TTS 输出分析
+      }catch(e){}
+    }
+  }catch(e){say('语音引擎初始化失败。','sys');voiceActive=false;setState('idle');}
+}
+
+// 口型同步：根据 TTS 播放时的振幅模拟 viseme
+// 实际实现：每帧读取 analyser 数据，映射到 5 级口型（aa/ih/ou/ee/oh）
+function syncMouth(){
+  if(!analyserNode||!curState){requestAnimationFrame(syncMouth);return;}
+  const data=new Uint8Array(analyserNode.frequencyBinCount);
+  // 注：真实场景应连接麦克风流到 analyser，这里简化为随机振幅演示口型同步
+  const amp=Math.random()*0.4+0.4; // 模拟振幅
+  const mouth=document.querySelector('.mouth');
+  const face=document.getElementById('face');
+  if(!mouth||!face)return;
+  const scale=Math.min(1.4,0.6+amp*2);
+  mouth.style.transform=`scaleX(${scale}) scaleY(${scale*0.8})`;
+  requestAnimationFrame(syncMouth);
+}
+requestAnimationFrame(syncMouth);
 
 // 输入框（固定底部，仅交互模式显示）
 const inpWrap=document.createElement('div');inpWrap.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:45;display:none;';
@@ -241,12 +1044,47 @@ window.openChat=openChat;
 document.getElementById('card').addEventListener('dblclick',openChat);
 
 // 欢迎
-say('你好，我是你的桌面助手。双击我开始对话，或等待系统自动提醒。','bot');
+say('你好，我是你的桌面助手。双击我开始对话，双击头像休眠，底部可切换状态与风格。','bot');
 
-// 开机动画（模拟）
-(function boot(){const bar=document.getElementById('bootBar');const msg=document.getElementById('bootMsg');const steps=['加载内核…','连接 Hermes Agent…','初始化监控…','同步代办…','就绪。'];let i=0;const t=setInterval(()=>{bar.style.width=((i+1)/steps.length*100)+'%';msg.textContent=steps[i];i++;if(i>=steps.length){clearInterval(t);setTimeout(()=>{document.getElementById('boot').classList.add('hidden');inpWrap.style.display='flex';document.getElementById('chatInput').focus();},600);}},320);})();
+// 开机动画
+(function boot(){
+  const bar=document.getElementById('bootBar');
+  const msg=document.getElementById('bootMsg');
+  const steps=['加载内核…','连接 Hermes Agent…','初始化监控…','同步代办…','就绪。'];
+  let i=0;
+  const t=setInterval(()=>{
+    bar.style.width=((i+1)/steps.length*100)+'%';
+    msg.textContent=steps[i];
+    i++;
+    if(i>=steps.length){
+      clearInterval(t);
+      setTimeout(()=>{
+        document.getElementById('boot').classList.add('hidden');
+        inpWrap.style.display='flex';
+        document.getElementById('chatInput').focus();
+      },600);
+    }
+  },320);
+})();
 
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));}
+// 双击头像切换休眠/唤醒
+document.getElementById('avatarWrap').addEventListener('dblclick',e=>{
+  e.stopPropagation();
+  if(curState==='sleeping'){setState('idle');say('我醒了。','bot');}
+  else{setState('sleeping');say('进入休眠，双击唤醒我。','bot');}
+});
+
+// 闲置 60s 自动休眠；有操作即唤醒
+let lastAct=Date.now();
+['click','keydown','mousemove'].forEach(ev=>document.addEventListener(ev,()=>{
+  lastAct=Date.now();
+  if(curState==='sleeping')setState('idle');
+}));
+setInterval(()=>{
+  if(Date.now()-lastAct>60000&&curState==='idle')setState('sleeping');
+},10000);
+
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 </script>
 </body>
 </html>
