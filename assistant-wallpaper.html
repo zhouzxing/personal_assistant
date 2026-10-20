@@ -30,7 +30,7 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
 /* 角色卡 */
 .char-card{position:relative;display:flex;flex-direction:column;align-items:center;width:min(700px,92vw);height:min(640px,88vh);background:var(--surface2);border:1px solid var(--border);border-radius:28px;box-shadow:0 30px 100px rgba(0,0,0,.55);backdrop-filter:blur(18px);overflow:hidden;animation:cardIn .9s cubic-bezier(.16,1,.3,1);}
 @keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(.96);}to{opacity:1;transform:none;}}
-.avatar-wrap{position:relative;width:260px;height:372px;margin-top:12px;border-radius:24px;border:4px solid var(--border);background:radial-gradient(ellipse at 50% 86%,rgba(99,102,241,.20),transparent 62%),radial-gradient(circle at 28% 22%,rgba(255,255,255,.10),transparent 58%),var(--bg);box-shadow:inset 0 -30px 60px rgba(0,0,0,.5),inset 0 0 40px rgba(0,0,0,.35);overflow:hidden;}
+.avatar-wrap{position:relative;flex:0 0 auto;width:260px;height:372px;margin-top:12px;border-radius:24px;border:4px solid var(--border);background:radial-gradient(ellipse at 50% 86%,rgba(99,102,241,.20),transparent 62%),radial-gradient(circle at 28% 22%,rgba(255,255,255,.10),transparent 58%),var(--bg);box-shadow:inset 0 -30px 60px rgba(0,0,0,.5),inset 0 0 40px rgba(0,0,0,.35);overflow:hidden;}
 #avatar{width:100%;height:100%;object-fit:cover;transition:transform .5s ease,filter .4s ease;filter:drop-shadow(0 6px 24px rgba(0,0,0,.55));}
 .avatar-wrap.talking #avatar{transform:scale(1.06);filter:drop-shadow(0 12px 32px rgba(99,102,241,.45));}
 .avatar-wrap.thinking #avatar{filter:blur(1px) drop-shadow(0 8px 20px rgba(168,85,247,.35));}
@@ -87,6 +87,7 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
 .empty-todo{color:var(--muted);font-size:.82rem;text-align:center;padding:18px;}
 /* 风格切换 */
 .style-switch{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:35;}
+.render-tip{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:.66rem;color:var(--muted);letter-spacing:.3px;pointer-events:none;z-index:34;}
 .btn{padding:9px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.82rem;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;}
 .btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(99,102,241,.15);}
 .btn.active{border-color:var(--accent);background:var(--accent);color:#fff;}
@@ -195,7 +196,7 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
     <div class="exec-icon">⚙</div>
     <div class="alert-icon">!</div>
     <div class="face" id="face" style="display:none"><div class="eyes"><div class="eye l"></div><div class="eye r"></div></div><div class="brows"><div class="brow l"></div><div class="brow r"></div></div><div class="mouth"></div></div>
-    <canvas id="charCanvas" width="220" height="220" style="display:block;"></canvas>
+    <canvas id="charCanvas" width="220" height="220" style="display:block;" title="可把 .vrm / .glb 模型文件拖到这里替换角色"></canvas>
     </div>
     <div class="char-status"><span class="dot ok" id="dot"></span><span id="statusText">待命中</span></div>
     <div class="char-name" id="name">小助手</div>
@@ -232,7 +233,9 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
     <button class="btn active" data-style="manus" onclick="setStyle(this,'manus')">Manus 像素玩偶</button>
     <button class="btn" data-style="hot" onclick="setStyle(this,'hot')">Hot 世界小姐</button>
     <button class="btn" data-style="hard" onclick="setStyle(this,'hard')">硬核男人</button>
+    <button class="btn" id="btn3d" onclick="toggle3D()" title="切换 three.js 3D 立绘 / canvas 2D 渲染">3D 立绘</button>
   </div>
+  <div class="render-tip" id="renderTip"></div>
 </div>
 <div class="boot" id="boot">
   <div class="boot-logo">◆</div>
@@ -251,6 +254,10 @@ body.wall-mode .sys-time,body.wall-mode .sys-date{color:var(--dim);}
     <div class="setting-row"><span>每小时截图留存</span><button class="sw" id="swCap" onclick="toggle(this,'cap')"></button></div>
   </div>
 </div>
+<script src="lib/three.min.js"></script>
+<script src="lib/GLTFLoader.js"></script>
+<script src="lib/three-vrm.min.js"></script>
+<script src="lib/pet3d.js"></script>
 <script>
 const API='http://127.0.0.1:8765';
 let currentStyle='manus';
@@ -315,6 +322,7 @@ const CHAR_SKIN={
   hard: {hair:'#98a2b3',hairDark:'#3f4a5c',hairLit:'#e2e8f0',eyeTop:'#7f1d1d',eyeBot:'#fb923c',skin:'#f0d8c6',skinShade:'#d3ac93',blush:'#c96a72',cloth:'#334155',clothDark:'#111c30',lash:'#3f4a5a'},
 };
 let PAL=CHAR_SKIN.manus;
+let MODE3D=false;                                   // true=three.js 3D 渲染，false=canvas 2D
 
 const cvsEl=document.getElementById('charCanvas');
 const cg=cvsEl.getContext('2d');
@@ -342,9 +350,9 @@ function _spawnFx(n,kind){
   for(let i=0;i<n;i++)PET.parts.push({x:(Math.random()-.5)*96,y:SK.head-10-Math.random()*60,
     vx:(Math.random()-.5)*52,vy:-38-Math.random()*44,life:1,r:2+Math.random()*2,kind});
 }
-window.pokeChar=function(){PET.popT=0;PET.popOn=true;_spawnFx(6,'star');};
+window.pokeChar=function(){PET.popT=0;PET.popOn=true;_spawnFx(6,'star');if(window.PET3D&&PET3D.ready)PET3D.poke();};
 
-function drawChar(dt){
+function updatePet(dt){
   dt=_clamp(dt||0.016,0.001,0.05);
   PET.t+=dt;
   const sleep=curState==='sleeping',talk=curState==='talking',
@@ -415,6 +423,11 @@ function drawChar(dt){
     if(p.life<=0)PET.parts.splice(i,1);
   }
 
+  return {sleep,talk,think,exec,alert,squint,br,pop};
+}
+
+function drawChar2D(view,dt){
+  const {sleep,talk,think,exec,alert,squint,br,pop}=view;
   // ══════ 绘制 ══════
   const g=cg;
   g.setTransform(DPR,0,0,DPR,0,0);
@@ -812,13 +825,15 @@ document.getElementById('avatarWrap').addEventListener('pointerdown',()=>{
 
 // 主动画循环（dt 驱动，切后台不炸）
 let _last=performance.now();
-function drawCharLoop(){
+function frameLoop(){
   const now=performance.now();
-  drawChar((now-_last)/1000);
-  _last=now;
-  requestAnimationFrame(drawCharLoop);
+  const dt=(now-_last)/1000; _last=now;
+  const view=updatePet(dt);
+  if(MODE3D && window.PET3D && PET3D.ready) PET3D.render(view,dt);
+  else drawChar2D(view,dt);
+  requestAnimationFrame(frameLoop);
 }
-drawCharLoop();
+frameLoop();
 
 function say(cls,txt){
   const chat=document.getElementById('chat');
@@ -844,6 +859,7 @@ function setStyle(btn,style){currentStyle=style;document.querySelectorAll('.btn'
   const L={manus:['小助手','像素风 AI 助手 · 随时待命'],hot:['瑶瑶','时尚风 AI 助手 · 优雅待命'],hard:['铁汉','硬核风 AI 助手 · 极简待命']}[style];
   document.getElementById('name').textContent=L[0];
   document.getElementById('sub').textContent=L[1];
+  if(window.PET3D&&PET3D.ready)PET3D.setPalette(PAL);
   if(window.pokeChar)window.pokeChar();
   say(switchMsg[style]||'风格已切换。', 'sys');
 }
@@ -1032,7 +1048,8 @@ function syncMouth(){
 requestAnimationFrame(syncMouth);
 
 // 输入框（固定底部，仅交互模式显示）
-const inpWrap=document.createElement('div');inpWrap.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:45;display:none;';
+// bottom 抬高到 122px：避免与底部 quick-states(82px) / style-switch(26px) 两排按钮重叠挡住点击
+const inpWrap=document.createElement('div');inpWrap.style.cssText='position:fixed;bottom:122px;left:50%;transform:translateX(-50%);z-index:45;display:none;';
 inpWrap.innerHTML=`<input id="chatInput" type="text" placeholder="对小助手说话…" style="width:460px;padding:12px 18px;border-radius:26px;border:1px solid var(--border);background:var(--surface);color:var(--text);outline:none;font:inherit;"><button id="sendBtn" style="margin-left:8px;padding:12px 20px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font:inherit;">发送</button>`;
 document.body.appendChild(inpWrap);
 document.getElementById('sendBtn').onclick=chat;
@@ -1051,7 +1068,10 @@ say('你好，我是你的桌面助手。双击我开始对话，双击头像休
   const bar=document.getElementById('bootBar');
   const msg=document.getElementById('bootMsg');
   const steps=['加载内核…','连接 Hermes Agent…','初始化监控…','同步代办…','就绪。'];
-  let i=0;
+  let i=0, done=false;
+  // 兜底：如果定时器被长任务饿死，4s 后强制解锁，保证 UI 不会永久卡在开机页
+  const unlock=function(){ if(done) return; done=true; document.getElementById('boot').classList.add('hidden'); inpWrap.style.display='flex'; };
+  setTimeout(unlock,4000);
   const t=setInterval(()=>{
     bar.style.width=((i+1)/steps.length*100)+'%';
     msg.textContent=steps[i];
@@ -1059,8 +1079,7 @@ say('你好，我是你的桌面助手。双击我开始对话，双击头像休
     if(i>=steps.length){
       clearInterval(t);
       setTimeout(()=>{
-        document.getElementById('boot').classList.add('hidden');
-        inpWrap.style.display='flex';
+        unlock();
         document.getElementById('chatInput').focus();
       },600);
     }
@@ -1086,5 +1105,84 @@ setInterval(()=>{
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 </script>
+
+<script>
+// ══════ three.js 3D 立绘接入（WebGL 不可用自动回落 2D）══════
+(function(){
+  var wrap=document.getElementById('avatarWrap');
+  var cv2d=document.getElementById('charCanvas');
+  var btn=document.getElementById('btn3d');
+  var tip=document.getElementById('renderTip');
+
+  function apply(){
+    var on = MODE3D && window.PET3D && PET3D.ready;
+    cv2d.style.display = on ? 'none' : 'block';
+    if(window.PET3D) PET3D.setVisible(on);
+    if(btn){
+      btn.classList.toggle('active', on);
+      btn.textContent = on ? '3D 立绘 ✓' : '切换到 3D';
+      btn.style.opacity = (window.PET3D && PET3D.ready) ? '1' : '.45';
+    }
+    if(tip){
+      tip.textContent = on
+        ? ('渲染后端：three.js WebGL · ' + (PET3D.hasVRM ? 'VRM 模型' : '程序化角色'))
+        : ('渲染后端：canvas 2D' + (window.PET3D && PET3D.note ? ' · ' + PET3D.note : ''));
+    }
+  }
+  function ensure(){
+    if(window.PET3D && PET3D.ready) return true;
+    if(!window.PET3D || !window.THREE) return false;
+    try{ return PET3D.init(wrap); }catch(e){ console.warn('3D init:', e); return false; }
+  }
+  window.toggle3D=function(){
+    if(!MODE3D && !ensure()){
+      notice('无法启用 3D', window.PET3D ? (PET3D.note || '初始化失败') : '未加载 lib/three.min.js', 'warn');
+      return;
+    }
+    MODE3D=!MODE3D;
+    if(MODE3D) PET3D.setPalette(PAL);
+    apply();
+    notice(MODE3D ? '已切换 3D 立绘' : '已切换 2D 渲染', MODE3D ? 'three.js 卡通渲染' : 'canvas 2D 渲染', 'ok');
+  };
+  window.resetAvatar=function(){ if(window.PET3D && PET3D.hasVRM) PET3D.unloadVRM(); };
+  // 上下文丢失（休眠 / 驱动重置）时自动回落
+  window.onRendererLost=function(){
+    MODE3D=false; apply();
+    notice('3D 渲染中断', 'WebGL 上下文丢失，已回落到 2D，点“切换到 3D”可重试', 'warn');
+  };
+
+  // 等一帧、布局稳定后再初始化（卡片有入场动画）
+  requestAnimationFrame(function(){
+    if(ensure()){ MODE3D=true; PET3D.setPalette(PAL); }
+    else { MODE3D=false; notice('3D 未启用', (window.PET3D && PET3D.note) || '未加载 lib/ 下的 three.min.js', 'warn'); }
+    apply();
+  });
+
+  // 拖入 .vrm / .glb 直接替换角色（无需起服务器）
+  wrap.addEventListener('dragover',function(e){e.preventDefault();e.dataTransfer.dropEffect='copy';});
+  wrap.addEventListener('drop',function(e){
+    e.preventDefault();
+    var f=e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(!f) return;
+    if(!/\.(vrm|glb)$/i.test(f.name)){ notice('不支持的文件','只接受 .vrm / .glb 模型','warn'); return; }
+    if(!ensure()){ notice('无法载入模型','WebGL 或 three-vrm 不可用','warn'); return; }
+    notice('正在载入模型', f.name, 'ok');
+    var fr=new FileReader();
+    fr.onload=function(){
+      MODE3D=true; apply(); PET3D.setPalette(PAL);
+      PET3D.loadVRM(fr.result).then(function(){
+        apply(); notice('模型已接管角色', f.name + ' · 拖入新模型可替换', 'ok');
+      }).catch(function(err){
+        notice('模型载入失败', String((err && err.message) || err), 'danger');
+      });
+    };
+    fr.onerror=function(){ notice('读取失败','无法读取该文件','danger'); };
+    fr.readAsArrayBuffer(f);
+  });
+
+  window.addEventListener('resize',function(){ if(window.PET3D && PET3D.ready) PET3D.resize(); });
+})();
+</script>
+
 </body>
 </html>
